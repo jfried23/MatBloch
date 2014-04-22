@@ -1,0 +1,2 @@
+tst=BlochSimTest;
+run(tst)
