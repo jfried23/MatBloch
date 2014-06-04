@@ -15,7 +15,7 @@ classdef FitGlobalp1331
             %First check user input
             %assert( isa( ZBlochSim, 'ZSpecBlochSim') );
             %assert( isa( pulseSequenc, 'PulseSequence') );
-            for data = varargin, assert( isa( data{1}, 'CEST') ); end
+            %for data = varargin, assert( isa( data{1}, 'CEST') ); end
             obj.blochsim = ZBlochSim;
             obj.datasets = varargin;
                         
@@ -33,7 +33,7 @@ classdef FitGlobalp1331
                 if ncycle(i) == 0
                     seq = gen_cest( 1.0, this_data.B1 );
                 else
-                    seq = gen_p1331( 1.0, this_data.B1, ncycle(i), center_ppm );
+                    seq = gen_p1331_7T( 1.0, this_data.B1, ncycle(i), center_ppm );
                 end
                 
                 obj.pulseq = [obj.pulseq seq];
@@ -96,6 +96,7 @@ classdef FitGlobalp1331
         function obj = run_lsqcurvefit( obj )
             options = optimoptions('lsqcurvefit','Display','iter');
             [guess, guess_lb, guess_ub] =  obj.blochsim.get_x0;
+            
             x = lsqcurvefit(@obj.eval_model, guess, obj.xdata, obj.ydata, guess_lb,guess_ub, options);
             obj.blochsim.set_x0( x );
         end
@@ -192,7 +193,7 @@ classdef FitGlobalp1331
             indx=1;
             for dataset = obj.datasets;
                 thisdata=dataset{1};
-                thry(indx,:) = obj.blochsim.run( obj.pulseq(indx), thisdata.B1, thisdata.fullppm' * 400);
+                thry(indx,:) = obj.blochsim.run( obj.pulseq(indx), thisdata.B1, thisdata.fullppm' * 298);
                 exp(indx,: ) = thisdata.zspec;
                 indx=indx+1;
                 %plot( thisdata.fullppm, thisdata.zspec,'o' );
@@ -227,10 +228,11 @@ classdef FitGlobalp1331
             i=1;
             for dataset = obj.datasets;
                 thisdata=dataset{1};
-                zspec= [ zspec obj.blochsim.run( obj.pulseq(i), thisdata.B1, thisdata.fullppm'*400) ];
+                zspec= [ zspec obj.blochsim.run( obj.pulseq(i), thisdata.B1, thisdata.fullppm'*298) ];
                 i=i+1;
             end
-        end      
+
+        end
         
     end
     

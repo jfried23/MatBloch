@@ -6,7 +6,7 @@ if ~isempty(varargin)
 end
 
 pp = 10e-9;
-d19 = 1/(2*( cent )*400);
+d19 = 1/(2*( cent )*298);
 
 sat_time = time/ncycles;
 

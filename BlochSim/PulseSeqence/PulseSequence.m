@@ -46,6 +46,15 @@ classdef PulseSequence < handle
             if obj.step > length( obj.sequence ), obj.step = 1; end
         end
         
+        function t = time(obj)
+            t=0.0;
+            elem = obj.next();
+            while ~isa(elem,'END')
+                t = t + elem.t();
+                elem = obj.next();
+            end
+            
+        end
         
     end
     

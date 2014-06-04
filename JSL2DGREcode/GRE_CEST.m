@@ -1,4 +1,4 @@
-classdef GRE_CEST
+classdef GRE_CEST < handle
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -71,8 +71,23 @@ classdef GRE_CEST
             end
         end
       
+        function obj = norm( obj, normal)
+            for i=1:obj.Nexp
+                obj.imgs(:,:,i) = obj.imgs(:,:,i)./normal.imgs;
+            end
+        end
+        
+        function obj = zero_offset(obj)
+
+            for i=1:obj.Nexp
+                tmp = obj.imgs(:,:,i) - obj.imgs(:,:,end);
+                obj.imgs(:,:,i) = tmp;
+            end
+                
+        end
+        
         function obj = show( obj, indx )
-            imagesc(obj.imgs(:,:,indx))
+            imagesc(obj.imgs(:,:,indx));
         end
         
         function spec = get_pt( obj )

@@ -8,9 +8,10 @@ classdef CEST < handle
         zfreq;   %List of offset freqencies in Hz
         fullppm; %List of offset freqencies in ppm
         echos; %1-D Sample Projections at each freqency offset 
-        zspec; %CEST Z-spectrum
-        asymm; %CEST asymmetry analysis
+        zspec; %CEST Z-spectrum        
         
+        ppm;   %Assymetric ppm scale
+        asymm; %CEST asymmetry analysis        
         B1   ; %Just reccords the B1 power [x, y] for this dataset
         pulse_seq; %A pulse sequence this was collected with
     end
@@ -31,29 +32,61 @@ classdef CEST < handle
                 end
             end
             
-            obj.path = BasePath;
-            obj.fids = read_bruker(obj.path);
-            obj.echos= fftshift( abs( fft(obj.fids, [], 2 ) ), 2 );
-            obj.zspec= trapz(obj.echos,2);
-            obj.zspec= (obj.zspec - obj.zspec(1));
-            %for j=1:length(obj.zspec), obj.zspec(j) = obj.zspec(j)+obj.zspec(1); end
-            obj.zfreq= zeros(1, length(obj.zspec) );
+            if exist(BasePath, 'file') 
+                obj.path = BasePath;
+                obj.fids = read_bruker(obj.path);
+                obj.echos= fftshift( abs( fft(obj.fids, [], 2 ) ), 2 );
+                obj.zspec= trapz(obj.echos,2);
+                obj.zspec= (obj.zspec - obj.zspec(1));
+                %for j=1:length(obj.zspec), obj.zspec(j) = obj.zspec(j)+obj.zspec(1); end
+                obj.zfreq= zeros(1, length(obj.zspec) );
             
-            np = length( obj.zspec);
-            if mod(np,2), np=np-1; end %if np odd ignore central point
-            obj.asymm = zeros(1,np/2);
-            for p = 1:np/2
-                obj.asymm(p) = 1-obj.zspec(p)/obj.zspec(np-p) ;
-            end
            
-            lstname = dir(fullfile(obj.path, 'fq*list'));
-            lstpth  = fullfile( obj.path, lstname.name);
-            if exist(lstpth, 'file')
-                obj.zfreq   = importdata( lstpth );
-                obj.fullppm = obj.zfreq/400;
+                S0=min(obj.zspec);
+                np = length( obj.zspec);
+                %if np odd ignore central point 
+                if mod(np,2) 
+                    np=np-1;
+                    S0 = onj.asymm( np+1 );     
+                end
+                
+                obj.asymm = zeros(1,np/2);
+                for p = 1:np/2
+                    obj.asymm(p) = (obj.zspec(p)-obj.zspec(end - p + 1))/S0;     
+                end
+           
+                lstname = dir(fullfile(obj.path, 'fq*list'));
+                lstpth  = fullfile( obj.path, lstname.name);
+                if exist(lstpth, 'file')
+                    obj.zfreq   = importdata( lstpth );
+                    obj.fullppm = obj.zfreq/400;
+                end
+                obj.ppm = obj.fullppm(1:np/2);
             end
-            
-            
+        end
+        
+        function obj = hack_add( obj, zfreq, zspec, B0 )
+           obj.path='None';
+           obj.fids='None';
+           obj.echos='None';
+           
+           obj.zfreq = zfreq;
+           obj.fullppm=zfreq/B0;
+           obj.zspec = zspec;
+           np = length( obj.zspec);
+           S0=min(obj.zspec);
+           
+           %if np odd ignore central point 
+           if mod(np,2) 
+               np=np-1;
+               S0 = onj.asymm( np+1 );
+           end 
+           
+           obj.asymm = zeros(1,np/2);
+           for p = 1:np/2
+               obj.asymm(p) = (obj.zspec(p)-obj.zspec(end - p + 1))/S0;      
+           end
+           obj.asymmppm = obj.fullppm(np/2:end);
         end
         
         function obj = plot( obj, varargin )

@@ -16,7 +16,7 @@ classdef FitGlobalCEST
             %First check user input
             assert( isa( ZBlochSim, 'ZSpecBlochSim') );
             assert( isa( pulseSequenc, 'PulseSequence') );
-            for data = varargin, assert( isa( data{1}, 'CEST') ); end
+%            for data = varargin, assert( isa( data{1}, 'CEST') ); end
             obj.blochsim = ZBlochSim;
             obj.pulseseq = pulseSequenc;
             obj.datasets = varargin;
@@ -182,7 +182,7 @@ classdef FitGlobalCEST
             indx=1;
             for dataset = obj.datasets;
                 thisdata=dataset{1};
-                thry(indx,:) = obj.blochsim.run( obj.pulseseq, thisdata.B1, thisdata.fullppm' * 400);
+                thry(indx,:) = obj.blochsim.run( obj.pulseseq, thisdata.B1, thisdata.fullppm' * 298);
                 exp(indx,: ) = thisdata.zspec;
                 indx=indx+1;
                 %plot( thisdata.fullppm, thisdata.zspec,'o' );
@@ -216,7 +216,7 @@ classdef FitGlobalCEST
             
             for dataset = obj.datasets;
                 thisdata=dataset{1};
-                zspec= [ zspec obj.blochsim.run( obj.pulseseq, thisdata.B1, thisdata.fullppm'*400) ];
+                zspec= [ zspec obj.blochsim.run( obj.pulseseq, thisdata.B1, thisdata.fullppm'*298) ];
             end
         end
         

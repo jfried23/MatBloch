@@ -14,7 +14,7 @@ size_data = size(data);
 B0map = zeros(size_data(1), size_data(2));
 freq2 = min(freq):df:max(freq);
 count=nnz(mask);
-[row col] = find(mask);
+[row, col] = find(mask);
 
 if flag == 0
 
